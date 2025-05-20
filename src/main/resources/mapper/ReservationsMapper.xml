@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.ReservationsMapper">
     
+    <!-- 予約情報検索 -->
     <select id="searchReservations" parameterType="com.example.demo.dto.request.ReservationSearchRequest" 
             resultType="com.example.demo.entity.Reservations">
         SELECT 
@@ -30,5 +31,26 @@
                 AND date = #{date}
             </if>
         </where>
+    </select>
+
+    <!-- CSVダウンロード用予約情報取得 -->
+    <select id="getReservationsForCsv" parameterType="com.example.demo.dto.request.CsvDownloadRequest"
+            resultType="com.example.demo.entity.Reservations">
+        SELECT 
+            reservation_id as reservationId,
+            user_id as userId,
+            room_id as roomId,
+            seq_number as seqNumber,
+            description,
+            date,
+            start_time as startTime,
+            end_time as endTime,
+            status,
+            reason_rejected as reasonRejected
+        FROM reservations
+        WHERE seq_number IN
+        <foreach collection="seqNumbers" item="seqNumber" open="(" separator="," close=")">
+            #{seqNumber}
+        </foreach>
     </select>
 </mapper> 

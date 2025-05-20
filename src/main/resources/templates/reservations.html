@@ -1,118 +1,164 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>履歴検索</title>
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        th, td { text-align: center; }
+        .search-area { margin: 20px 0; }
+        .table-responsive { max-height: 500px; overflow-y: auto; }
+        .btn-area { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+        .btn-fixed { width: 120px; }
+    </style>
 </head>
-<body>
-<div class="container mt-4">
-    <h2 class="text-center">履歴検索</h2>
-    <form id="searchForm" class="row g-3">
-        <div class="col-md-3">
-            <label for="reservationId" class="form-label">予約ID</label>
-            <input type="text" class="form-control" id="reservationId">
-        </div>
-        <div class="col-md-3">
-            <label for="userId" class="form-label">担当者ID</label>
-            <input type="text" class="form-control" id="userId">
-        </div>
-        <div class="col-md-3">
-            <label for="date" class="form-label">予約日</label>
-            <input type="date" class="form-control" id="date">
-        </div>
-        <div class="col-md-3">
-            <label for="status" class="form-label">承認状態</label>
-            <select class="form-select" id="status">
-                <option value="">--選択--</option>
-                <option value="01">申請中</option>
-                <option value="02">承認済</option>
-                <option value="03">否認</option>
-            </select>
-        </div>
-        <div class="col-12 text-end mt-2">
-            <button type="button" class="btn btn-primary" onclick="search()">検索</button>
-        </div>
-    </form>
+<body class="container">
 
-    <table class="table table-bordered table-striped mt-4">
-        <thead>
-        <tr>
-            <th>予約ID</th>
-            <th>予約日</th>
-            <th>開始時刻</th>
-            <th>ルーム番号</th>
-            <th>状態</th>
-            <th>担当者ID</th>
-            <th>訪問目的</th>
-            <th>却下理由</th>
-        </tr>
-        </thead>
-        <tbody id="resultTable">
-            <!-- 結果會動態填入 -->
-        </tbody>
-    </table>
-</div>
+    <h3 class="text-center mt-4">履歴検索</h3>
 
-<script>
-    function search() {
-        const reservationId = document.getElementById('reservationId').value;
-        const userId = document.getElementById('userId').value;
-        const date = document.getElementById('date').value;
-        const status = document.getElementById('status').value;
+	<div class="search-area">
+	    <div class="row mb-1">
+	        <div class="col-md-5">
+	            <label for="reservationID" class="form-label">予約ID：</label>
+	            <input type="text" id="reservationID" class="form-control form-control-sm">
+	        </div>
+	        <div class="col-md-5">
+	            <label for="createdBy" class="form-label">担当者ID：</label>
+	            <input type="text" id="createdBy" class="form-control form-control-sm">
+	        </div>
+	    </div>
+	    <div class="row mb-1">
+	        <div class="col-md-5">
+	            <label for="date" class="form-label">予約日：</label>
+	            <input type="date" id="date" class="form-control form-control-sm">
+	        </div>
+	        <div class="col-md-5">
+	            <label for="status" class="form-label">承認状態：</label>
+	            <select id="status" class="form-select form-select-sm">
+	                <option value="">--選択--</option>
+	                <option value="01">承認</option>
+	                <option value="02">却下</option>
+	                <option value="03">未定</option>
+	            </select>
+	        </div>
+	        <div class="col-md-2 d-flex align-items-end justify-content-end">
+	            <button class="btn btn-primary btn-fixed" onclick="search()">検索</button>
+	        </div>
+	    </div>
+	</div>
 
-        let url = '/api/reservations?';
-        if (reservationId) url += `reservationId=${reservationId}&`;
-        if (userId) url += `userId=${userId}&`;
-        if (date) url += `date=${date}&`;
-        if (status) url += `status=${status}`;
+    <div class="btn-area">
+        <button class="btn btn-success btn-fixed" onclick="downloadCsv()">CSV出力</button>
+    </div>
 
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.getElementById('resultTable');
-                tbody.innerHTML = '';
-                
-                data.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.reservationId || ''}</td>
-                        <td>${formatDate(item.date) || ''}</td>
-                        <td>${formatTime(item.startTime) || ''}</td>
-                        <td>${item.roomId || ''}</td>
-                        <td>${formatStatus(item.status) || ''}</td>
-                        <td>${item.userId || ''}</td>
-                        <td>${item.description || ''}</td>
-                        <td>${item.reasonRejected || ''}</td>
-                    `;
-                    tbody.appendChild(row);
+    <div class="table-responsive mt-2">
+        <table class="table table-bordered table-striped">
+            <thead class="table-primary">
+                <tr>
+                    <th><input type="checkbox" id="selectAll" onclick="toggleAllCheckboxes()"></th>
+                    <th>#</th>
+                    <th>予約ID</th>
+                    <th>予約日</th>
+                    <th>開始終了時刻</th>
+                    <th>ルーム番号</th>
+                    <th>状態</th>
+                    <th>担当者id</th>
+                    <th>訪問目的</th>
+                    <th>却下理由</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody">
+                <!-- 資料由 JavaScript 動態生成 -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function search() {
+            const reservationID = document.getElementById('reservationID').value;
+            const createdBy = document.getElementById('createdBy').value;
+            const date = document.getElementById('date').value;
+            const status = document.getElementById('status').value;
+
+            const params = new URLSearchParams({
+                reservationID,
+                createdBy,
+                date,
+                status
+            });
+
+            fetch(`/api/reservations/search?${params.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('resultBody');
+                    tbody.innerHTML = '';
+                    data.forEach((rsv, index) => {
+                        const statusText = rsv.status === "01" ? "承認"
+                                         : rsv.status === "02" ? "却下"
+                                         : rsv.status === "03" ? "未定"
+                                         : "";
+                        const row = `
+                            <tr>
+                                <td><input type="checkbox" class="select-row" data-seq="${rsv.seqNumber}"></td>
+                                <td>${index + 1}</td>
+                                <td>${rsv.reservationID}</td>
+                                <td>${rsv.date}</td>
+                                <td>${rsv.startTime} ~ ${rsv.endTime}</td>
+                                <td>${rsv.roomID}</td>
+                                <td>${statusText}</td>
+                                <td>${rsv.createdBy}</td>
+                                <td>${rsv.description || ''}</td>
+                                <td>${rsv.rejectReason || ''}</td>
+                            </tr>
+                        `;
+                        tbody.insertAdjacentHTML('beforeend', row);
+                    });
                 });
+        }
+
+        function toggleAllCheckboxes() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.getElementsByClassName('select-row');
+            Array.from(checkboxes).forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        function downloadCsv() {
+            const selectedCheckboxes = document.querySelectorAll('.select-row:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('CSV出力するデータを選択してください。');
+                return;
+            }
+
+            const seqNumbers = Array.from(selectedCheckboxes).map(checkbox => 
+                parseInt(checkbox.getAttribute('data-seq'))
+            );
+
+            fetch('/api/csv/reservations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ seqNumbers: seqNumbers })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'reservations.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('検索中にエラーが発生しました。');
+                alert('CSV出力中にエラーが発生しました。');
             });
-    }
+        }
+    </script>
 
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('ja-JP');
-    }
-
-    function formatTime(timeStr) {
-        if (!timeStr) return '';
-        return timeStr.substring(0, 5); // HH:mm 형식으로 변환
-    }
-
-    function formatStatus(status) {
-        const statusMap = {
-            '01': '申請中',
-            '02': '承認済',
-            '03': '否認'
-        };
-        return statusMap[status] || status;
-    }
-</script>
 </body>
-</html> 
+</html>
