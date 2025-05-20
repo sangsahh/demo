@@ -1,12 +1,11 @@
-package com.example.demo.entity;
+package com.example.demo.dto.response;
 
 import lombok.Data;
 import java.sql.Date;
 import java.sql.Time;
-import java.sql.Timestamp;
 
 @Data
-public class Reservations {
+public class ReservationResponse {
     private String reservationId;
     private String userId;
     private String roomId;
@@ -17,9 +16,4 @@ public class Reservations {
     private Time endTime;
     private String status;
     private String reasonRejected;
-    private Boolean deleteFlag;
-    private String createdBy;
-    private Timestamp createdDate;
-    private String updatedBy;
-    private Timestamp updatedDate;
-}
+} 

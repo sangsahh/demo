@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>履歴検索</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2 class="text-center">履歴検索</h2>
+    <form id="searchForm" class="row g-3">
+        <div class="col-md-3">
+            <label for="reservationId" class="form-label">予約ID</label>
+            <input type="text" class="form-control" id="reservationId">
+        </div>
+        <div class="col-md-3">
+            <label for="userId" class="form-label">担当者ID</label>
+            <input type="text" class="form-control" id="userId">
+        </div>
+        <div class="col-md-3">
+            <label for="date" class="form-label">予約日</label>
+            <input type="date" class="form-control" id="date">
+        </div>
+        <div class="col-md-3">
+            <label for="status" class="form-label">承認状態</label>
+            <select class="form-select" id="status">
+                <option value="">--選択--</option>
+                <option value="01">申請中</option>
+                <option value="02">承認済</option>
+                <option value="03">否認</option>
+            </select>
+        </div>
+        <div class="col-12 text-end mt-2">
+            <button type="button" class="btn btn-primary" onclick="search()">検索</button>
+        </div>
+    </form>
+
+    <table class="table table-bordered table-striped mt-4">
+        <thead>
+        <tr>
+            <th>予約ID</th>
+            <th>予約日</th>
+            <th>開始時刻</th>
+            <th>ルーム番号</th>
+            <th>状態</th>
+            <th>担当者ID</th>
+            <th>訪問目的</th>
+            <th>却下理由</th>
+        </tr>
+        </thead>
+        <tbody id="resultTable">
+            <!-- 結果會動態填入 -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function search() {
+        const reservationId = document.getElementById('reservationId').value;
+        const userId = document.getElementById('userId').value;
+        const date = document.getElementById('date').value;
+        const status = document.getElementById('status').value;
+
+        let url = '/api/reservations?';
+        if (reservationId) url += `reservationId=${reservationId}&`;
+        if (userId) url += `userId=${userId}&`;
+        if (date) url += `date=${date}&`;
+        if (status) url += `status=${status}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('resultTable');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.reservationId || ''}</td>
+                        <td>${formatDate(item.date) || ''}</td>
+                        <td>${formatTime(item.startTime) || ''}</td>
+                        <td>${item.roomId || ''}</td>
+                        <td>${formatStatus(item.status) || ''}</td>
+                        <td>${item.userId || ''}</td>
+                        <td>${item.description || ''}</td>
+                        <td>${item.reasonRejected || ''}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('検索中にエラーが発生しました。');
+            });
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ja-JP');
+    }
+
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        return timeStr.substring(0, 5); // HH:mm 형식으로 변환
+    }
+
+    function formatStatus(status) {
+        const statusMap = {
+            '01': '申請中',
+            '02': '承認済',
+            '03': '否認'
+        };
+        return statusMap[status] || status;
+    }
+</script>
+</body>
+</html> 
