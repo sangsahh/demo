@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.ReservationSearchRequest;
-import com.example.demo.dto.response.ReservationResponse;
-import com.example.demo.service.ReservationsService;
+import com.example.demo.dto.request.HistorySearchRequestDTO;
+import com.example.demo.dto.response.HistorySearchResponseDTO;
+import com.example.demo.service.HistorySearchSerivce;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -12,10 +12,10 @@ import java.util.List;
 public class HistorySearchController {
 
     @Autowired
-    private ReservationsService reservationsService;
+    private HistorySearchSerivce historySearchSerivce;
 
     @GetMapping
-    public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
-        return reservationsService.searchReservations(request);
+    public List<HistorySearchResponseDTO> searchReservations(HistorySearchRequestDTO request) {
+        return historySearchSerivce.searchReservations(request);
     }
 }

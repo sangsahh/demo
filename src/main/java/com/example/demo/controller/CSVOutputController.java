@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.CsvDownloadRequest;
-import com.example.demo.service.CsvService;
+import com.example.demo.dto.request.CSVOutputRequestDTO;
+import com.example.demo.service.CSVOutputService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/csv")
-public class CsvController {
+public class CSVOutputController {
 
     @Autowired
-    private CsvService csvService;
+    private CSVOutputService CSVOutputService;
 
     /**
      * 予約情報のCSVファイルをダウンロード
@@ -24,8 +24,8 @@ public class CsvController {
      * @return CSVファイルのバイトデータ
      */
     @PostMapping("/reservations")
-    public ResponseEntity<byte[]> downloadReservationsCsv(@RequestBody CsvDownloadRequest request) {
-        byte[] csvData = csvService.generateReservationsCsv(request);
+    public ResponseEntity<byte[]> downloadReservationsCsv(@RequestBody CSVOutputRequestDTO request) {
+        byte[] csvData = CSVOutputService.generateReservationsCsv(request);
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);

@@ -7,7 +7,7 @@ import java.util.List;
  * CSVダウンロードリクエストDTO
  */
 @Data
-public class CsvDownloadRequest {
+public class CSVOutputRequestDTO {
     /**
      * 選択された予約のシーケンス番号リスト
      */

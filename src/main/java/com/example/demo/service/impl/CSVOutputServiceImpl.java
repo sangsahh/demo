@@ -1,9 +1,9 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.request.CsvDownloadRequest;
-import com.example.demo.entity.Reservations;
-import com.example.demo.mapper.ReservationsMapper;
-import com.example.demo.service.CsvService;
+import com.example.demo.dto.request.CSVOutputRequestDTO;
+import com.example.demo.entity.ReservationEntity;
+import com.example.demo.mapper.ReservationDAO;
+import com.example.demo.service.CSVOutputService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
@@ -15,14 +15,14 @@ import java.util.Map;
 import java.lang.reflect.Method;
 
 @Service
-public class CsvServiceImpl implements CsvService {
+public class CSVOutputServiceImpl implements CSVOutputService {
 
     @Autowired
-    private ReservationsMapper reservationsMapper;
+    private ReservationDAO reservationDAO;
 
     @Override
-    public byte[] generateReservationsCsv(CsvDownloadRequest request) {
-        List<Reservations> reservations = reservationsMapper.getReservationsForCsv(request);
+    public byte[] generateReservationsCsv(CSVOutputRequestDTO request) {
+        List<ReservationEntity> reservations = reservationDAO.getReservationsForCsv(request);
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              OutputStreamWriter writer = new OutputStreamWriter(baos, StandardCharsets.UTF_8)) {
@@ -43,7 +43,7 @@ public class CsvServiceImpl implements CsvService {
             writer.write(String.join(",", columns.values()) + "\n");
             
             // データ作成
-            for (Reservations reservation : reservations) {
+            for (ReservationEntity reservation : reservations) {
                 StringBuilder row = new StringBuilder();
                 boolean isFirst = true;
                 
@@ -56,7 +56,7 @@ public class CsvServiceImpl implements CsvService {
                     // リフレクションを使用して動的にゲッターメソッドを呼び出し
                     String methodName = "get" + column.getKey().substring(0, 1).toUpperCase() + 
                                       column.getKey().substring(1);
-                    Method method = Reservations.class.getMethod(methodName);
+                    Method method = ReservationEntity.class.getMethod(methodName);
                     Object value = method.invoke(reservation);
                     
                     // nullチェックと値の変換
