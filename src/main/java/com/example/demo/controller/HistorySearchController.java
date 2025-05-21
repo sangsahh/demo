@@ -15,7 +15,7 @@ public class HistorySearchController {
     private HistorySearchSerivce historySearchSerivce;
 
     @GetMapping
-    public List<HistorySearchResponseDTO> searchReservations(HistorySearchRequestDTO request) {
+    public HistorySearchResponseDTO searchReservations(HistorySearchRequestDTO request) {
         return historySearchSerivce.searchReservations(request);
     }
 }

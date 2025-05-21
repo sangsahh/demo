@@ -5,5 +5,5 @@ import com.example.demo.dto.response.HistorySearchResponseDTO;
 import java.util.List;
 
 public interface HistorySearchSerivce {
-    List<HistorySearchResponseDTO> searchReservations(HistorySearchRequestDTO request);
+    HistorySearchResponseDTO searchReservations(HistorySearchRequestDTO request);
 } 

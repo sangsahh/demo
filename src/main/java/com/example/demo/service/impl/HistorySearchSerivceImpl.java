@@ -1,7 +1,9 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.HistorySearchRequestDTO;
+import com.example.demo.dto.response.CSVOutputResponseDTO;
 import com.example.demo.dto.response.HistorySearchResponseDTO;
+import com.example.demo.dto.response.ResponseDTO;
 import com.example.demo.entity.ReservationEntity;
 import com.example.demo.mapper.ReservationDAO;
 import com.example.demo.service.HistorySearchSerivce;
@@ -20,12 +22,18 @@ public class HistorySearchSerivceImpl implements HistorySearchSerivce {
     @Autowired
     private DozerBeanMapper dozerBeanMapper;
 
+    private HistorySearchResponseDTO historySearchResponseDTO;
+
     @Override
-    public List<HistorySearchResponseDTO> searchReservations(HistorySearchRequestDTO request) {
+    public HistorySearchResponseDTO searchReservations(HistorySearchRequestDTO request) {
+
         List<ReservationEntity> reservations = reservationDAO.searchReservations(request);
-        
-        return reservations.stream()
-                .map(reservation -> dozerBeanMapper.map(reservation, HistorySearchResponseDTO.class))
-                .collect(Collectors.toList());
+
+        List<ResponseDTO> responseDTO = reservations.stream()
+            .map(reservation -> dozerBeanMapper.map(reservation, ResponseDTO.class))
+            .collect(Collectors.toList());
+        historySearchResponseDTO.setResponseDTO(responseDTO);
+
+        return historySearchResponseDTO;
     }
 } 

@@ -1,9 +1,14 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.CSVOutputRequestDTO;
+import com.example.demo.dto.response.CSVOutputResponseDTO;
+import com.example.demo.dto.response.HistorySearchResponseDTO;
+import com.example.demo.dto.response.ResponseDTO;
 import com.example.demo.entity.ReservationEntity;
 import com.example.demo.mapper.ReservationDAO;
 import com.example.demo.service.CSVOutputService;
+import java.util.stream.Collectors;
+import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
@@ -20,10 +25,18 @@ public class CSVOutputServiceImpl implements CSVOutputService {
     @Autowired
     private ReservationDAO reservationDAO;
 
+    @Autowired
+    private DozerBeanMapper dozerBeanMapper;
+
+    private CSVOutputResponseDTO csvOutputResponseDTO;
+
     @Override
     public byte[] generateReservationsCsv(CSVOutputRequestDTO request) {
         List<ReservationEntity> reservations = reservationDAO.getReservationsForCsv(request);
-        
+        List<ResponseDTO> responseDTO =reservations.stream()
+            .map(reservation -> dozerBeanMapper.map(reservation, ResponseDTO.class))
+            .collect(Collectors.toList());
+        csvOutputResponseDTO.setResponseDTO(responseDTO);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              OutputStreamWriter writer = new OutputStreamWriter(baos, StandardCharsets.UTF_8)) {
             
@@ -43,7 +56,7 @@ public class CSVOutputServiceImpl implements CSVOutputService {
             writer.write(String.join(",", columns.values()) + "\n");
             
             // データ作成
-            for (ReservationEntity reservation : reservations) {
+            for (ResponseDTO dto : csvOutputResponseDTO.getResponseDTO()) {
                 StringBuilder row = new StringBuilder();
                 boolean isFirst = true;
                 
@@ -57,7 +70,7 @@ public class CSVOutputServiceImpl implements CSVOutputService {
                     String methodName = "get" + column.getKey().substring(0, 1).toUpperCase() + 
                                       column.getKey().substring(1);
                     Method method = ReservationEntity.class.getMethod(methodName);
-                    Object value = method.invoke(reservation);
+                    Object value = method.invoke(dto);
                     
                     // nullチェックと値の変換
                     if (value == null) {
