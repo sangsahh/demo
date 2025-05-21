@@ -24,13 +24,13 @@ public class CSVOutputController {
      * @return CSVファイルのバイトデータ
      */
     @PostMapping("/reservations")
-    public ResponseEntity<byte[]> downloadReservationsCsv(@RequestBody CSVOutputRequestDTO request) {
-        byte[] csvData = CSVOutputService.generateReservationsCsv(request);
+    public ResponseEntity<String> downloadReservationsCsv(@RequestBody CSVOutputRequestDTO request) {
+        String csvData = CSVOutputService.generateReservationsCsv(request);
         
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentType(MediaType.valueOf("text/csv"));
         headers.setContentDispositionFormData("attachment", "reservations.csv");
-        
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(csvData);

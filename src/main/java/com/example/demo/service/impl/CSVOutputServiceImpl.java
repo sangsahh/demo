@@ -7,6 +7,7 @@ import com.example.demo.dto.response.ResponseDTO;
 import com.example.demo.entity.ReservationEntity;
 import com.example.demo.mapper.ReservationDAO;
 import com.example.demo.service.CSVOutputService;
+import java.io.StringWriter;
 import java.util.stream.Collectors;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +32,14 @@ public class CSVOutputServiceImpl implements CSVOutputService {
     private CSVOutputResponseDTO csvOutputResponseDTO;
 
     @Override
-    public byte[] generateReservationsCsv(CSVOutputRequestDTO request) {
+    public String generateReservationsCsv(CSVOutputRequestDTO request) {
         List<ReservationEntity> reservations = reservationDAO.getReservationsForCsv(request);
         List<ResponseDTO> responseDTO =reservations.stream()
             .map(reservation -> dozerBeanMapper.map(reservation, ResponseDTO.class))
             .collect(Collectors.toList());
         csvOutputResponseDTO.setResponseDTO(responseDTO);
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             OutputStreamWriter writer = new OutputStreamWriter(baos, StandardCharsets.UTF_8)) {
-            
+        try (StringWriter writer = new StringWriter()) {
+
             // CSVカラム定義
             Map<String, String> columns = new LinkedHashMap<>();
             columns.put("reservationId", "予約ID");
@@ -51,27 +51,27 @@ public class CSVOutputServiceImpl implements CSVOutputService {
             columns.put("userId", "担当者ID");
             columns.put("description", "訪問目的");
             columns.put("reasonRejected", "却下理由");
-            
+
             // ヘッダー作成
             writer.write(String.join(",", columns.values()) + "\n");
-            
+
             // データ作成
             for (ResponseDTO dto : csvOutputResponseDTO.getResponseDTO()) {
                 StringBuilder row = new StringBuilder();
                 boolean isFirst = true;
-                
+
                 for (Map.Entry<String, String> column : columns.entrySet()) {
                     if (!isFirst) {
                         row.append(",");
                     }
                     isFirst = false;
-                    
+
                     // リフレクションを使用して動的にゲッターメソッドを呼び出し
-                    String methodName = "get" + column.getKey().substring(0, 1).toUpperCase() + 
-                                      column.getKey().substring(1);
-                    Method method = ReservationEntity.class.getMethod(methodName);
+                    String methodName = "get" + column.getKey().substring(0, 1).toUpperCase() +
+                        column.getKey().substring(1);
+                    Method method = ResponseDTO.class.getMethod(methodName);
                     Object value = method.invoke(dto);
-                    
+
                     // nullチェックと値の変換
                     if (value == null) {
                         row.append("");
@@ -85,9 +85,9 @@ public class CSVOutputServiceImpl implements CSVOutputService {
                 }
                 writer.write(row.toString() + "\n");
             }
-            
-            writer.flush();
-            return baos.toByteArray();
+
+            // 최종적으로 StringWriter에서 생성된 문자열 반환
+            return writer.toString();
         } catch (Exception e) {
             throw new RuntimeException("CSVファイルの作成中にエラーが発生しました。", e);
         }

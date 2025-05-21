@@ -6,6 +6,7 @@ import com.example.demo.dto.response.HistorySearchResponseDTO;
 import com.example.demo.dto.response.ResponseDTO;
 import com.example.demo.entity.ReservationEntity;
 import com.example.demo.mapper.ReservationDAO;
+import com.example.demo.mapper.ReservationMapper;
 import com.example.demo.service.HistorySearchSerivce;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;

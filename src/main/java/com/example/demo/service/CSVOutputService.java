@@ -11,5 +11,5 @@ public interface CSVOutputService {
      * @param request 選択された予約のシーケンス番号リスト
      * @return CSVファイルのバイトデータ
      */
-    byte[] generateReservationsCsv(CSVOutputRequestDTO request);
+    String generateReservationsCsv(CSVOutputRequestDTO request);
 } 
